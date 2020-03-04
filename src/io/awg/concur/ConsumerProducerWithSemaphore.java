@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -47,7 +49,7 @@ public class ConsumerProducerWithSemaphore {
 					System.out.println(future.get());
 				} catch (InterruptedException | ExecutionException inte) {
 					System.out.println("Exception inner: " + inte);
-					inte.printStackTrace();
+					//inte.printStackTrace();
 				}
 			});
 		} catch (InterruptedException e) {
@@ -62,7 +64,7 @@ public class ConsumerProducerWithSemaphore {
 	class Consumer implements Callable<String> {
 
 		@Override
-		public String call() throws InterruptedException {
+		public String call() throws InterruptedException, TimeoutException {
 			int count = 0;
 
 			while (count++ < 50) {
@@ -70,7 +72,9 @@ public class ConsumerProducerWithSemaphore {
 					lock.lock();
 					
 					while (isEmpty(buffer)) {
-						isEmpty.await();
+						if(!isEmpty.await(10, TimeUnit.MILLISECONDS)) {
+							throw new TimeoutException("Timeout in consuming");
+						}
 					}
 					buffer.remove(buffer.size() - 1);
 					isFull.signalAll();
@@ -94,6 +98,7 @@ public class ConsumerProducerWithSemaphore {
 			while (count++ < 50) {
 				try {
 					lock.lock();
+					int err = 10/0;
 					while (isFull(buffer)) {
 						isFull.await();
 					}

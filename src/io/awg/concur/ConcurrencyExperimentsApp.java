@@ -6,9 +6,14 @@ public class ConcurrencyExperimentsApp {
 	public static void main(String[] args) {
 		System.out.println("Running concur app");
 		
-		ConsumerProducerWithSemaphore service = new ConsumerProducerWithSemaphore();
+		ConsumerProducerWithSemaphore semaphoreExperiment = new ConsumerProducerWithSemaphore();
+		//semaphoreExperiment.runExecution();
 		
-		service.runExecution();
+		CacheWithReadWriteLock cacheExperiment = new CacheWithReadWriteLock();
+		cacheExperiment.runExperiment();
+		
+		
+		
 
 	}
 
